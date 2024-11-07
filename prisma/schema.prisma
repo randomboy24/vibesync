@@ -12,3 +12,33 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  userId String @id @default(uuid())
+  email String 
+  name String   
+  Spaces Spaces[]
+  Upvotes Upvotes[]
+}   
+
+model Spaces {
+  spacesId String @id @default(uuid())
+  userId String 
+  user User @relation(fields: [userId],references: [userId])
+  Songs Songs[]
+}
+
+model Songs {
+  songId String @id @default(uuid())
+  spaceId String 
+  Space Spaces @relation(fields: [spaceId],references: [spacesId])
+  Upvotes Upvotes[]
+}
+
+model Upvotes {
+  voteId String @id @default(uuid())
+  SongId String 
+  UserId String 
+  User User @relation(fields: [UserId],references: [userId])
+  Songs Songs @relation(fields: [SongId],references: [songId])
+}
