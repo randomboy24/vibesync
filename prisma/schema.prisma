@@ -23,6 +23,7 @@ model User {
 
 model Spaces {
   spacesId String @id @default(uuid())
+  name String? 
   userId String 
   user User @relation(fields: [userId],references: [userId])
   Songs Songs[]
@@ -30,6 +31,7 @@ model Spaces {
 
 model Songs {
   songId String @id @default(uuid())
+  name String
   spaceId String 
   Space Spaces @relation(fields: [spaceId],references: [spacesId])
   Upvotes Upvotes[]
@@ -41,4 +43,5 @@ model Upvotes {
   UserId String 
   User User @relation(fields: [UserId],references: [userId])
   Songs Songs @relation(fields: [SongId],references: [songId])
+  @@unique([UserId,SongId])
 }
