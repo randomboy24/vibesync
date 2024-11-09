@@ -17,11 +17,16 @@ const handler = NextAuth({
             email
         }}){
             try{
-                // const prisma = new PrismaClient()
-                // console.log("-----------------------------------------------------------------------\n")                
-                // console.log(prisma.user)
-                // return false;
-                console.log(process.env.DATABASE_URL)
+                const user = await prisma.user.findFirst({
+                    where:{
+                        email:email as string
+                    }
+                })
+                if(user){
+                    console.log("user already exists")
+                    return true;
+                }
+                // console.log(process.env.DATABASE_URL)
                 const res = await prisma.user.create({
                     data:{
                         email:email as string,

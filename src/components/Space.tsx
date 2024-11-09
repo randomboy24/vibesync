@@ -1,11 +1,43 @@
 "use client";
-import { MoveDiagonal } from "lucide-react";
-import { useState } from "react";
 
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 export const Space = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const router = useRouter();
     function Modal() {
+        const [spaceName,setSpaceName] = useState("");
+        function generateRandomName(){
+            const musicSpaceNames = [
+                "Harmony Hub",
+                "Rhythm Room",
+                "The Soundscape",
+                "Melody Haven",
+                "Groove Garden",
+                "Echo Chamber",
+                "Beat Bunker",
+                "The Listening Lounge",
+                "Vibe Vault",
+                "Chords & Coffee",
+                "Tempo Terrace",
+                "The Mix Lab",
+                "Sonic Sanctuary",
+                "Bass Base",
+                "Symphony Studio",
+                "Vinyl Vault",
+                "Acoustic Alley",
+                "The Music Nest",
+                "Pulse Place",
+                "Harmony Haven",
+                "Jam Junction",
+                "Resonance Room",
+                "The Chill Stage",
+                "Soul Station",
+                "Audio Arcade"
+            ];
+            return musicSpaceNames[Math.floor(Math.random() * musicSpaceNames.length)]            
+        }
         return (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md relative">
@@ -28,15 +60,27 @@ export const Space = () => {
                         type="text"
                         placeholder="Space Name"
                         className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onChange={(e) => setSpaceName(e.target.value)}
                     />
 
                     {/* Create Space Button */}
                     <button
                         className="w-full mt-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
-                        onClick={() => null} // Placeholder for button action
+                        onClick={async () => {
+                            try{
+                                const res = await axios.post("http://localhost:3000/api/space",{
+                                    userId:"90d92677-7840-400a-ae7e-f9c41826a3a6",
+                                    name:spaceName
+                                })
+                                router.push(`/${res.data.spaceid}`)
+                            }catch(e){
+                                console.log("error occured")
+                            }
+                        }      
+                        } // Placeholder for button action
                     >
                         Create Space
-                    </button>
+                    </button>   
                 </div>
             </div>
         );
@@ -47,7 +91,9 @@ export const Space = () => {
             {!isModalOpen ? (
                 <button
                     className="bg-gray-700 text-gray-200 hover:text-white hover:bg-gray-600 rounded-lg w-32 h-8"
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setIsModalOpen(true)
+                    }}
                 >
                     Create Space
                 </button>

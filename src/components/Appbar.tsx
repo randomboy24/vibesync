@@ -17,6 +17,6 @@ export function Appbar(){
                 {session.data?.user && <button onClick={() => { signOut();}} className="border h-8 w-16 rounded-lg bg-blue-600 text-white text-extrabold">Logout</button>}
                 {!session.data?.user && <button onClick={() => { console.log(process.env.GOOGLE_CLIENT_ID); signIn();}} className="border h-8 w-16 rounded-lg bg-blue-600 text-white text-extrabold">SignIn</button>}
             </div>
-        </div>
+        </div>  
     )
 }
