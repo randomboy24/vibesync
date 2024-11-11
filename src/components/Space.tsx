@@ -8,7 +8,7 @@ export const Space = () => {
     const router = useRouter();
     function Modal() {
         const [spaceName,setSpaceName] = useState("");
-        function generateRandomName(){
+        (function generateRandomName(){
             const musicSpaceNames = [
                 "Harmony Hub",
                 "Rhythm Room",
@@ -37,7 +37,7 @@ export const Space = () => {
                 "Audio Arcade"
             ];
             return musicSpaceNames[Math.floor(Math.random() * musicSpaceNames.length)]            
-        }
+        })();
         return (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
                 <div className="bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md relative">
@@ -72,9 +72,11 @@ export const Space = () => {
                                     userId:"90d92677-7840-400a-ae7e-f9c41826a3a6",
                                     name:spaceName
                                 })
+                                console.log(res.data.spaceid)
                                 router.push(`/${res.data.spaceid}`)
                             }catch(e){
                                 console.log("error occured")
+                                console.log(e)
                             }
                         }      
                         } // Placeholder for button action

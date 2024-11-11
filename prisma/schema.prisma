@@ -31,7 +31,8 @@ model Spaces {
 
 model Songs {
   songId String @id @default(uuid())
-  name String
+  name String?
+  url String
   spaceId String 
   Space Spaces @relation(fields: [spaceId],references: [spacesId])
   Upvotes Upvotes[]

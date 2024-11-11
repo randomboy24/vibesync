@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
 import prisma from '../../../db';
 import GoogleProvider from "next-auth/providers/google";
 
