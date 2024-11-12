@@ -10,7 +10,7 @@ export const POST = async (req:NextRequest) => {
                             name:body.name,
                             userId:body.userId
                         }
-                    })
+                    })      
         console.log(space);
         return NextResponse.json({
             spaceid:space.spacesId  

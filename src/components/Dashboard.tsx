@@ -48,9 +48,13 @@ export function Dashboard({spaceId}:{spaceId:string}){
                     <div className="mt-5">
                     {video.map((vid,index) => 
                         <div className="h-36 flex items-center justify-center  w-[95%] rounded-lg border" key={index}> 
-                            video {index+1}
+                            <button onClick={() => {
+                            
+                            }}>upvote</button>
+                            <div>video {index+1}</div>
                         </div>
                     )}
+                    {}
                     </div>
                 </div>
                 <div className="basis-[40%]">
@@ -86,12 +90,15 @@ export function Dashboard({spaceId}:{spaceId:string}){
                             <div className="text-2xl font-bold">Now Playing</div>
                             <div className="h-72 flex justify-center items-center ">
                                 {video.length>0?
-                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${video[count].id}`} controls playing height="100%" width="100%"  onEnded={() => {
-                                if(count>=(video.length-1)){
-                                    setVideo([])
-                                    return;
-                                }
-                                setCount(count => ++count)
+                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${video[0].id}`} controls playing height="100%" width="100%"  onEnded={() => {
+                                setVideo((prevVideo) => {
+                                    return prevVideo.slice(1);
+                                })
+                                // if(count>=(video.length-1)){
+                                //     setVideo([])
+                                //     return;
+                                // }
+                                // setCount(count => ++count)
                                }}/>
                                 :
                                 <div>    
