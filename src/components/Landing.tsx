@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Users, Zap, Star, Headphones, Mic2, Volume2, Play, SkipForward, Heart, Github, Twitter, Linkedin, Instagram } from "lucide-react"
+import { Users, Zap, Star, Headphones, Mic2, Volume2, Play, SkipForward, Heart, Github, Twitter, Instagram } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 

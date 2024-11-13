@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player"
 import axios from "axios";
 import { Songs } from "@prisma/client";
+import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 
 interface videoType{
     id:string,
@@ -11,32 +13,80 @@ interface videoType{
 }
 
 export function Dashboard({spaceId}:{spaceId:string}){
-    const [video,setVideo] = useState<videoType[]>([])
+    // const [video,setVideo] = useState<videoType[]>([])
+    const [renderedVideos,setRenderedVideos] = useState<videoType[]>([])
     const [inputData,setInputData] = useState("")
-    const [count,setCount] = useState(0);
+    const [socket,setSocket] = useState<WebSocket | null>(null)
+    // const [count,setCount] = useState(0);
     const playerRef = useRef(null);
+    const session = useSession();
 
+    useEffect(() => {
+
+        setTimeout(() => {
+            console.log("gawnkgkwjkogaewhigobn")
+            console.log("session :- "+session.data?.user)
+        },3000)
+    },[])
+
+    // // Show loading message until session status changes
+    // if (status === 'loading') {
+    //   return <p>Loading...</p>;
+    // }
+  
+    // // After loading, check if the session is authenticated
+    // if (status === 'authenticated') {
+    //   console.log(session.user); // session data should be available here
+    //   return <div>Welcome, {session.user?.name}</div>;
+    // }
+    
     async function fetchVideos (){
-        console.log(spaceId)
+        console.log("fetchVideos got called")
+        console.table(renderedVideos)
         try{
-            const videosFromDatabase = await axios.get(`http://localhost:3000/api/space?spaceId=${spaceId}`)
-            console.log(videosFromDatabase.data.songs);
-            console.log(typeof [22,32]);
+            const videosFromDatabase = await axios.get(`http://localhost:3000/api/space?spaceId=${spaceId}`);
+            setRenderedVideos([]);
+            // console.log(videosFromDatabase.data.songs);
+            // const upvoteCount = await axios
+
             (videosFromDatabase.data.songs).forEach((song:Songs) => {
-                setVideo(video => [...video,{id:song.url,upvotesCount:0}])
+                setRenderedVideos((video) => {
+                    console.log(renderedVideos)
+                    return [...video,{id:song.url,upvotesCount:0}]
+                })
             })
             return;
         }catch(e){
             console.log(e)
             return;
         }
-        console.log(video)
     }
 
 
+    // useEffect(() => {
+    //     // console.log(renderedVideos)
+    // },[renderedVideos])
+
     useEffect(() => {
-        // db call fetch data
         fetchVideos();
+        // console.log(renderedVideos)
+        const socket = new WebSocket("ws://localhost:8080")
+
+        socket.onopen = () => {
+            // console.log("connected ")
+            setSocket(socket)
+        }
+
+        
+        socket.onmessage = (event) => {
+            const upvotes = event.data
+            console.log(upvotes)
+        }
+        
+        return () => {
+            socket.close();
+        }
+        // db call fetch data
     },[])
     return (
         <div className="flex justify-center w-screen">
@@ -46,15 +96,18 @@ export function Dashboard({spaceId}:{spaceId:string}){
                         Upcoming songs
                     </div>
                     <div className="mt-5">
-                    {video.map((vid,index) => 
-                        <div className="h-36 flex items-center justify-center  w-[95%] rounded-lg border" key={index}> 
+                    {renderedVideos.map((vid,index) => 
+                        <div className="h-36 flex flex-col items-center justify-center  w-[95%] rounded-lg border" key={index}> 
                             <button onClick={() => {
-                            
-                            }}>upvote</button>
+                                console.log(spaceId)
+                                socket?.send(JSON.stringify({
+                                    spaceId:spaceId,
+                                    url:vid.id,
+                                }))
+                            }}>upvote {vid.upvotesCount}</button> 
                             <div>video {index+1}</div>
                         </div>
                     )}
-                    {}
                     </div>
                 </div>
                 <div className="basis-[40%]">
@@ -67,20 +120,18 @@ export function Dashboard({spaceId}:{spaceId:string}){
                     </div>
                     <div className="border border-gray-700 bg-[#111]">
                         <div className="flex flex-col gap-y-2 mt-7">
-                            <input type="text" placeholder="paste youtube link here" className="block rounded-lg w-[100%]  h-9 pl-2 bg-[#000]" onChange={(e) => {
+                            <input type="text" placeholder="paste youtube link here" className="block rounded-lg w-[100%] text-white  h-9 pl-2 bg-[#000]" onChange={(e) => {
                                 setInputData(e.target.value)
                             }}/>
                             <button className="block w-[100%] h-10   rounded-lg text-white bg-purple-700" onClick={async () => {
-                                console.log(inputData)
-                                const response = await axios.post("http://localhost:3000/api/song",{
+                                // console.log(inputData)
+                                await axios.post("http://localhost:3000/api/song",{
                                     spaceId:spaceId,
                                     url:inputData
                                 })
-                                console.log(response.data)
-                                // setVideo([...video,{
-                                //     id:inputData,
-                                //     upvotesCount:0
-                                // }])
+                                // console.log(response.data)
+                                // setRenderedVideos([])
+                                fetchVideos();
                                 // console.log(video)
                             }}>
                                 Add to Queue
@@ -89,9 +140,9 @@ export function Dashboard({spaceId}:{spaceId:string}){
                         <div className="mt-8 flex flex-col gap-y-2">
                             <div className="text-2xl font-bold">Now Playing</div>
                             <div className="h-72 flex justify-center items-center ">
-                                {video.length>0?
-                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${video[0].id}`} controls playing height="100%" width="100%"  onEnded={() => {
-                                setVideo((prevVideo) => {
+                                {renderedVideos.length>0?
+                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${renderedVideos[0].id}`} controls playing height="100%" width="100%"  onEnded={() => {
+                                setRenderedVideos((prevVideo) => {
                                     return prevVideo.slice(1);
                                 })
                                 // if(count>=(video.length-1)){
@@ -121,6 +172,12 @@ export function Dashboard({spaceId}:{spaceId:string}){
                                 }}>
                                     <Play height={18} width={18}/>
                                     <span>Play next</span>
+                                </button>
+                                
+                                <button className="text-black bg-blue-500" onClick={() => {
+                                    // socket?.send("hello from browser to the nodejs server")
+                                }}>
+                                    click me now  
                                 </button>
                             </div>
                         </div>

@@ -1,9 +1,13 @@
 import prisma from "@/app/db"
+import { getSession } from "next-auth/react";
 import { NextRequest, NextResponse } from "next/server"
 
 
 export const POST = async (req:NextRequest) => {
+    // const session = await getSession(   )
+    // console.log("session:-" +session);
     const body = await req.json();
+    console.log(body.userId)
     try{
         const space = await prisma.spaces.create({
                         data:{
@@ -34,6 +38,21 @@ export async function GET(req:NextRequest){
                 spaceId:spaceId
             }
         })
+        const upvotesAndSongUrl = await Promise.all(songs.map(async (song) => {
+            const upvoteCount = await prisma.upvotes.findMany({
+                where:{
+                    SpaceId:spaceId,
+                    SongId:song.songId
+                }   
+            })
+            return {
+                url:song.url,
+                upvoteCount:upvoteCount.length
+            }
+        }))
+        
+        console.log(upvotesAndSongUrl)
+
         return NextResponse.json({
             songs:songs
         })

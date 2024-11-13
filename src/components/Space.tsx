@@ -60,7 +60,9 @@ export const Space = () => {
                         type="text"
                         placeholder="Space Name"
                         className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        onChange={(e) => setSpaceName(e.target.value)}
+                        onChange={(e) => {
+                            setSpaceName(e.target.value)
+                        }}
                     />
 
                     {/* Create Space Button */}
@@ -68,8 +70,10 @@ export const Space = () => {
                         className="w-full mt-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
                         onClick={async () => {
                             try{
+                                localStorage.setItem("spaceName",spaceName)
+                         
                                 const res = await axios.post("http://localhost:3000/api/space",{
-                                    userId:"90d92677-7840-400a-ae7e-f9c41826a3a6",
+                                    userId:"1c1ad11b-0d2a-4d1a-aea5-f40a072d8b66",
                                     name:spaceName
                                 })
                                 console.log(res.data.spaceid)
