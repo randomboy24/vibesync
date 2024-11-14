@@ -3,9 +3,11 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 export const Space = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const router = useRouter();
+    const session = useSession();
     function Modal() {
         const [spaceName,setSpaceName] = useState("");
         (function generateRandomName(){
@@ -73,12 +75,12 @@ export const Space = () => {
                                 localStorage.setItem("spaceName",spaceName)
                          
                                 const res = await axios.post("http://localhost:3000/api/space",{
-                                    userId:"1c1ad11b-0d2a-4d1a-aea5-f40a072d8b66",
+                                    userId:session.data?.userId,
                                     name:spaceName
                                 })
                                 console.log(res.data.spaceid)
                                 router.push(`/${res.data.spaceid}`)
-                            }catch(e){
+                            }catch(e){  
                                 console.log("error occured")
                                 console.log(e)
                             }

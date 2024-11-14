@@ -15,30 +15,61 @@ const handler = NextAuth({
             name,
             email
         }}){
+            console.log(name,email)
             try{
-                const user = await prisma.user.findFirst({
+                const exsistingUser = await prisma.user.findFirst({
                     where:{
                         email:email as string
-                    }
+                    }   
                 })
-                if(user){
+                if(exsistingUser){
+                    console.log(exsistingUser)
                     console.log("user already exists")
                     return true;
                 }
                 // console.log(process.env.DATABASE_URL)
-                const res = await prisma.user.create({
-                    data:{
-                        email:email as string,
-                        name:name as string
-                    }
-                })
-                console.log(res)
+                try{    
+                    const newUser = await prisma.user.create({
+                        data:{
+                            email:email as string,
+                            name:name as string
+                        }
+                    })
+                    console.log(newUser)
+                    return true
+                }catch(err){
+                    console.log(err)
+                    return false
+                }
             }catch(e){
                 console.log("-----------------------------------------------------------------------\n"+e)
                 return false
             }
-            return true;
+            return false;
         },
+        async jwt({token,user}){
+            if(user){
+                console.log("email :- "+user.email)
+                const dbUser = await prisma.user.findFirst({
+                    where:{
+                        email:user.email as string
+                    }
+                })
+                if(dbUser){
+                    token.userId = dbUser.userId
+                }
+                console.log(token)
+                return token
+            }
+            return token
+        },
+        async session({session,token}){
+            if(token?.userId){
+                session.userId = token.userId as string 
+            }
+            console.log(session)
+            return session
+        }
         
     }
 })

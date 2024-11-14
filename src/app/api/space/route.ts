@@ -28,17 +28,18 @@ export const POST = async (req:NextRequest) => {
 }
 
 export async function GET(req:NextRequest){
-    const spaceId = req.url.split("spaceId=")[1];
+    const spaceId = req.url.split("spaceId=")[1].split("}")[0];
     // return NextResponse.json({
     //     message:"hey there"
     // });
+    console.log("spaceId = "+spaceId)
     try{
         const songs = await prisma.songs.findMany({
             where:{
                 spaceId:spaceId
             }
         })
-        const upvotesAndSongUrl = await Promise.all(songs.map(async (song) => {
+        const songRecords = await Promise.all(songs.map(async (song) => {
             const upvoteCount = await prisma.upvotes.findMany({
                 where:{
                     SpaceId:spaceId,
@@ -46,18 +47,18 @@ export async function GET(req:NextRequest){
                 }   
             })
             return {
-                url:song.url,
-                upvoteCount:upvoteCount.length
+                url:song.url,   
+                upvoteCount:upvoteCount.length,
+                songId:song.songId
             }
         }))
-        
-        console.log(upvotesAndSongUrl)
-
+        // console.log(upvotesAndSongUrl)
+        console.log("Songs =_ "+songRecords)
         return NextResponse.json({
-            songs:songs
+            songs:songRecords
         })
     }
-    catch(err){
+    catch(err){ 
         console.log(err)
         return NextResponse.json({
             message:"something went wrong"

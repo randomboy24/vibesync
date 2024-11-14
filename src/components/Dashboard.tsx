@@ -8,7 +8,8 @@ import { useSession } from "next-auth/react";
 // import { useSession } from "next-auth/react";
 
 interface videoType{
-    id:string,
+    songId:string,
+    url:string,
     upvotesCount:number,
 }
 
@@ -21,13 +22,13 @@ export function Dashboard({spaceId}:{spaceId:string}){
     const playerRef = useRef(null);
     const session = useSession();
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        setTimeout(() => {
-            console.log("gawnkgkwjkogaewhigobn")
-            console.log("session :- "+session.data?.user)
-        },3000)
-    },[])
+    //     setTimeout(() => {
+    //         console.log("gawnkgkwjkogaewhigobn")
+    //         console.log("session :- "+session.data?.user)
+    //     },3000)
+    // },[])
 
     // // Show loading message until session status changes
     // if (status === 'loading') {
@@ -40,21 +41,27 @@ export function Dashboard({spaceId}:{spaceId:string}){
     //   return <div>Welcome, {session.user?.name}</div>;
     // }
     
-    async function fetchVideos (){
+    async function fetchVideos (){  
         console.log("fetchVideos got called")
         console.table(renderedVideos)
         try{
-            const videosFromDatabase = await axios.get(`http://localhost:3000/api/space?spaceId=${spaceId}`);
+            const videosFromDatabase = await axios.get(`http://localhost:3000/api/space?spaceId=${spaceId}}`);
             setRenderedVideos([]);
             // console.log(videosFromDatabase.data.songs);
             // const upvoteCount = await axios
 
-            (videosFromDatabase.data.songs).forEach((song:Songs) => {
+            // console.table(videosFromDatabase)
+            const songRecords = videosFromDatabase.data.songs
+            console.log(songRecords)
+            songRecords.forEach((song:any) => {
                 setRenderedVideos((video) => {
-                    console.log(renderedVideos)
-                    return [...video,{id:song.url,upvotesCount:0}]
+                    // console.log("gawioriaerngio")
+                    // console.log(renderedVideos)      
+                    return [...video,{url:song.url,upvotesCount:song.upvoteCount,songId:song.songId}]
                 })
             })
+
+            console.log("rendered videos ;- "+renderedVideos)
             return;
         }catch(e){
             console.log(e)
@@ -73,36 +80,78 @@ export function Dashboard({spaceId}:{spaceId:string}){
         const socket = new WebSocket("ws://localhost:8080")
 
         socket.onopen = () => {
-            // console.log("connected ")
+            console.log("connected ")
             setSocket(socket)
         }
 
         
-        socket.onmessage = (event) => {
-            const upvotes = event.data
-            console.log(upvotes)
-        }
+        // socket.onmessage = (event) => {
+        //     const upvoteCount = JSON.parse(event.data);
+        //     console.log(event.data)
+        //     try{
+        //         console.log(renderedVideos.length)
+        //         console.log("renderedVideos: \n"+renderedVideos)
+        //         let updatedVideos = renderedVideos.map((video) => {
+        //             // console.log("ernghjioarnioa5ngiothnhiotsjhims46"+{
+        //             //     ...video,
+        //             //     upvotesCount:upvoteCount.upvoteCount
+        //             // })
+        //             console.log("video+"+video)
+        //             if(upvoteCount.songId === video.songId){
+        //                 return {
+        //                     ...video,
+        //                     upvotesCount:upvoteCount.upvoteCount
+        //                 }
+        //             }    
+        //             return video;
+        //         })  
+        //         console.log(renderedVideos)
+        //         console.log("received the message\n"+updatedVideos)
+        //         // setRenderedVideos(updatedVideos)
+        //     }catch(err){
+        //         console.log(err)
+        //     }    
+        // }
+        // socket.onmessage = (event) => {
+        //     const upvoteCount = JSON.parse(event.data);
+        //     console.log("Received WebSocket message:", upvoteCount);
         
+        //     setRenderedVideos((prevVideos) =>o
+        //         prevVideos.map((video) =>
+        //             video.songId === upvoteCount.songId
+        //                 ? { ...video, upvotesCount: upvoteCount.upvoteCount }
+        //                 : video
+        //         )
+        //     );
+        // };
+        
+        socket.onmessage = (event) => {
+            const upvoteCount = JSON.parse(event.data)
+            setRenderedVideos((prevVideo) => 
+            prevVideo.map(video => video.songId===upvoteCount.songId?{...video,upvotesCount:upvoteCount.upvoteCount}:video))
+        }
+
         return () => {
             socket.close();
         }
         // db call fetch data
     },[])
     return (
-        <div className="flex justify-center w-screen">
+        <div className="flex justify-center w-screen bg-[#111] h-screen">
             <div className="flex md:w-[70%] w-screen md:flex-row flex-col   mt-10 md:px-0 px-4">
                 <div className=" text-2xl font-bold basis-[60%]">
-                    <div>
+                    <div>   
                         Upcoming songs
                     </div>
                     <div className="mt-5">
                     {renderedVideos.map((vid,index) => 
-                        <div className="h-36 flex flex-col items-center justify-center  w-[95%] rounded-lg border" key={index}> 
+                        <div className="h-36 flex flex-col items-center justify-center  w-[95%] rounded-lg border dark:text-white text-white" key={index}> 
                             <button onClick={() => {
                                 console.log(spaceId)
                                 socket?.send(JSON.stringify({
-                                    spaceId:spaceId,
-                                    url:vid.id,
+                                    spaceId:spaceId,    
+                                    songId:vid.songId,
+                                    userId:session.data?.userId
                                 }))
                             }}>upvote {vid.upvotesCount}</button> 
                             <div>video {index+1}</div>
@@ -125,7 +174,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
                             }}/>
                             <button className="block w-[100%] h-10   rounded-lg text-white bg-purple-700" onClick={async () => {
                                 // console.log(inputData)
-                                await axios.post("http://localhost:3000/api/song",{
+                                const songId = await axios.post("http://localhost:3000/api/song",{
                                     spaceId:spaceId,
                                     url:inputData
                                 })
@@ -141,7 +190,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
                             <div className="text-2xl font-bold">Now Playing</div>
                             <div className="h-72 flex justify-center items-center ">
                                 {renderedVideos.length>0?
-                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${renderedVideos[0].id}`} controls playing height="100%" width="100%"  onEnded={() => {
+                               <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${renderedVideos[0].url}`} controls playing height="100%" width="100%"  onEnded={() => {
                                 setRenderedVideos((prevVideo) => {
                                     return prevVideo.slice(1);
                                 })

@@ -14,10 +14,12 @@ import {
 import { Users, Zap, Star, Headphones, Mic2, Volume2, Play, SkipForward, Heart, Github, Twitter, Instagram } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { useSession } from 'next-auth/react'
 
 export function Landing() {
   const [isCreateSpaceOpen, setIsCreateSpaceOpen] = useState(false)
   const [spaceName, setSpaceName] = useState('')
+  
 
   const handleCreateSpace = (e: React.FormEvent) => {
     e.preventDefault()

@@ -49,6 +49,7 @@ export default function AppBar() {
 
   const session = useSession();
   const router = useRouter();
+  console.log(session.data)
 
   return (
     <header className="px-4 lg:px-6 h-16 flex items-center justify-between border-b shadow-white dark:shadow-black shadow-lg dark:bg-gray-900 backdrop-blur-md transition-colors duration-300 sticky top-0 z-50">
