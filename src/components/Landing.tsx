@@ -15,10 +15,14 @@ import { Users, Zap, Star, Headphones, Mic2, Volume2, Play, SkipForward, Heart, 
 import Link from "next/link"
 import Image from "next/image"
 import { useSession } from 'next-auth/react'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 export function Landing() {
   const [isCreateSpaceOpen, setIsCreateSpaceOpen] = useState(false)
   const [spaceName, setSpaceName] = useState('')
+  const session = useSession();
+  const router = useRouter();
   
 
   const handleCreateSpace = (e: React.FormEvent) => {
@@ -220,7 +224,15 @@ export function Landing() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Create Space</Button>
+              <Button onClick={async () => {
+                const response = await axios.post("http://localhost:3000/api/space",{
+                  userId:session.data?.userId,
+                  name:spaceName
+                })
+                // console.log(response)
+                router.push(`/${response.data.spaceId}`)
+
+              }} type="submit">Create Space</Button>
             </DialogFooter>
           </form>
         </DialogContent>

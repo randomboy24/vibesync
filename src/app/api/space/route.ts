@@ -16,8 +16,8 @@ export const POST = async (req:NextRequest) => {
                         }
                     })      
         console.log(space);
-        return NextResponse.json({
-            spaceid:space.spacesId  
+        return NextResponse.json({  
+            spaceId:space.spacesId  
         })
     }catch(e){
         return NextResponse.json({
@@ -49,7 +49,7 @@ export async function GET(req:NextRequest){
             return {
                 url:song.url,   
                 upvoteCount:upvoteCount.length,
-                songId:song.songId
+                songId:song.songId  
             }
         }))
         // console.log(upvotesAndSongUrl)
