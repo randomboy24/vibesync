@@ -32,36 +32,54 @@ export async function GET(req:NextRequest){
     // return NextResponse.json({
     //     message:"hey there"
     // });
-    console.log("spaceId = "+spaceId)
-    try{
-        const songs = await prisma.songs.findMany({
+    // const songUpvotesCounts = await prisma.upvotes.groupBy({
+    //     by:['SongId'],
+    //     where:{
+    //         SpaceId:spaceId
+    //     },
+    //     _count:{    
+    //         SongId:true
+    //     },
+    //     orderBy:{
+    //         _count:{
+    //             SongId:'desc'
+    //         }
+    //     }   
+    // })      
+    // const upvotesWithUrl = await Promise.all(songUpvotesCounts.map(async (song) => {
+    //     const url = await prisma.songs.findFirst({
+    //         where:{
+    //             songId:song.SongId
+    //         },
+    //         select:{
+    //             url:true
+    //         }
+    //     })
+
+    //     return {songId:song.SongId,url:url?.url,upvoteCount:song._count.SongId}
+    // }))
+
+
+    const songRecords = await prisma.songs.findMany({
+        where:{
+            spaceId:spaceId
+        }
+    })
+
+    const songWithUpvotes = await Promise.all(songRecords.map(async (song) => {
+        const upvoteCount = await prisma.upvotes.count({
             where:{
-                spaceId:spaceId
+                SongId:song.songId
             }
         })
-        const songRecords = await Promise.all(songs.map(async (song) => {
-            const upvoteCount = await prisma.upvotes.findMany({
-                where:{
-                    SpaceId:spaceId,
-                    SongId:song.songId
-                }   
-            })
-            return {
-                url:song.url,   
-                upvoteCount:upvoteCount.length,
-                songId:song.songId  
-            }
-        }))
-        // console.log(upvotesAndSongUrl)
-        console.log("Songs =_ "+songRecords)
-        return NextResponse.json({
-            songs:songRecords
-        })
-    }
-    catch(err){ 
-        console.log(err)
-        return NextResponse.json({
-            message:"something went wrong"
-        })
-    }
+        return {...song,upvoteCount:upvoteCount}
+    }))
+
+
+
+    console.log(songWithUpvotes)
+
+    return NextResponse.json({
+        songs:songWithUpvotes
+    })
 }

@@ -225,6 +225,11 @@ export function Landing() {
             </div>
             <DialogFooter>
               <Button onClick={async () => {
+	      	const user = session.data?.userId;
+		if(!user){
+			alert("you are not logged in");
+			return;
+		}
                 const response = await axios.post("http://localhost:3000/api/space",{
                   userId:session.data?.userId,
                   name:spaceName
