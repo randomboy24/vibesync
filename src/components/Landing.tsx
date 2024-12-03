@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -17,6 +17,7 @@ import Image from "next/image"
 import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
+import { UserContext } from '@/app/context'
 
 export function Landing() {
   const [isCreateSpaceOpen, setIsCreateSpaceOpen] = useState(false)
@@ -24,6 +25,7 @@ export function Landing() {
   const session = useSession();
   const router = useRouter();
   
+  const reponse = useContext(UserContext);
 
   const handleCreateSpace = (e: React.FormEvent) => {
     e.preventDefault()
@@ -225,11 +227,6 @@ export function Landing() {
             </div>
             <DialogFooter>
               <Button onClick={async () => {
-	      	const user = session.data?.userId;
-		if(!user){
-			alert("you are not logged in");
-			return;
-		}
                 const response = await axios.post("http://localhost:3000/api/space",{
                   userId:session.data?.userId,
                   name:spaceName

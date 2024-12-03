@@ -16,7 +16,8 @@ datasource db {
 model User {
   userId String @id @default(uuid())
   email String 
-  name String   
+  name String
+  password String?
   Spaces Spaces[]
   Upvotes Upvotes[]
 }   

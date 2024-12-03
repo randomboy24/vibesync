@@ -1,3 +1,4 @@
+import { BackgroundBeamsWithCollision } from "@/components/check"
 import { Dashboard } from "@/components/Dashboard"
 
 
@@ -7,11 +8,14 @@ export default function Space ({params : {
     space:string
 }}) {
     return (
-        <div>
-            <div>
+        <div className="bg-[#000000]">
+            {/* <div>
                 this  is a space route {space}
-            </div>
-            <Dashboard spaceId={space[0]}/>
+            </div> */}
+            {/* <BackgroundBeamsWithCollision className="h-[100vh] w-[100vw]"> */}
+                <Dashboard spaceId={space[0]}/>
+            {/* </BackgroundBeamsWithCollision> */}
+                
         </div>
     )
 }

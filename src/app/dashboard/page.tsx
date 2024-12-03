@@ -23,7 +23,7 @@ export default function Dashboard(){
                         </button>        
                     </div>
                     <div className="flex flex-col gap-y-2 mt-7">
-                        <input type="text" placeholder="paste youtube link here" className="block rounded-lg w-[100%]  h-9 pl-2 bg-[#000]" />
+                        <input type="text" placeholder="paste youtubbuioarbrguibrbguie link here" className="block rounded-lg w-[100%]  h-9 pl-2 bg-[#000]" />
                         <button className="block w-[100%] h-10 border border-red-700 rounded-lg">
                             Add to Queue
                         </button>
