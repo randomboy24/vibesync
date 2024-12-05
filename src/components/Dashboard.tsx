@@ -1,5 +1,5 @@
 "use client"
-import { Play, Share2 } from "lucide-react";
+import { Play, Share2, ThumbsUp, ThumbsUpIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactPlayer from "react-player"
 import axios from "axios";
@@ -28,6 +28,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
         url:""  
     })   
     const session = useSession();
+    const [loading,setLoading] = useState(true)
     
     const checkIfAdmin = async () => {
         const userId = session.data?.userId;
@@ -56,17 +57,15 @@ export function Dashboard({spaceId}:{spaceId:string}){
                 if(!session.data?.userId){
                     return;
                 }
-                const songsFromDatabase = await axios.get(`http://localhost:3000/api/space?spaceId=${spaceId}&userId=${session.data?.userId}`);
+                const songsFromDatabase = await axios.get(`http://localhost:3000/api/song?spaceId=${spaceId}&userId=${session.data?.userId}`);
                 setSongsList([]);
 
                 
 
                 const songRecords = songsFromDatabase.data.songs
                 
-                console.log(songRecords)
-
                 songRecords.forEach((song:songType) => {
-                    setSongsList((prevSongs):any => {    
+                    setSongsList((prevSongs):any => {       
                         if(song.active){
                             setCurrentSong({
                                 songId:song.songId,
@@ -78,7 +77,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
                         return [...prevSongs,{url:song.url,upvoteCount:song.upvoteCount,songId:song.songId,active:song.active,isUpvoted:song.isUpvoted,name:song.name as string}]
                     })
                 }).then(() => {
-                    console.log(songsList)
+                    // console.log(songsList)
                 })
 
                 return;
@@ -126,19 +125,12 @@ export function Dashboard({spaceId}:{spaceId:string}){
                 }
                 
                 if(data.type === "deleteOneUpvote"){
-                    console.log(songsList)
-                    // console.log(data.songId)
-                    console.log(session.data?.userId)
-                    console.log(data.userId)
+
                     setSongsList((prevSongs) => {
                         const prevSongRecord = prevSongs;
                         const newSongRecord  = prevSongRecord.map((song) => {
                             if(song.songId == data.songId){
-                                console.log("matched")
                                 if(session.data?.userId == data.userId){
-                                    console.log("userIdmatched")
-                                    console.log({...song,isUpvoted:false,upvoteCount:data.upvoteCount})
-                                    console.log(prevSongRecord)
                                     return {...song,isUpvoted:false,upvoteCount:data.upvoteCount}
                                 }
                                 return {...song,upvoteCount:data.upvoteCount}
@@ -184,30 +176,24 @@ export function Dashboard({spaceId}:{spaceId:string}){
         
 
         return (
-            <div className="flex justify-center w-screen h-screen ">
-                <div className="flex md:w-[70%] w-screen md:flex-row flex-col   mt-10 md:px-0 px-4">
-                    <div className=" text-2xl font-bold basis-[60%]">
+            <div className="flex justify-center">
+                <div className="flex md:w-[70%] w-screen lg:flex-row flex-col mt-10 md:px-0 px-4">
+                    <div className=" text-2xl font-bold basis-[60%]  pl-3">
                     {/* {isAdmin && <div className="te  xt-black text-5xl font-extrabold">I  am Admin </div>} */}
-                        <div className="text-2xl font-bold tracking-tighter sm:text-xl md:text-xl lg:text-2xl/none bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 dark:from-purple-400 dark:via-pink-400 dark:to-blue-400 animate-gradient-x">   
+                        <div className="text-black dark:text-white text-2xl">   
                             Upcoming songs
                         </div>  
                         <div className="mt-5">
                         {songsList.map((vid,index) => 
-                            <div className="h-36 flex flex-row my-4  w-[95%] rounded-xl bg-white dark:bg-[#52057B] " key={index} > 
-                                <div className="h-[120px] w-[180px] my-auto ml-4 rounded-xl"> 
-                                    <img src={`https://img.youtube.com/vi/${vid.url}/hqdefault.jpg`} alt="image" className="h-full w-full" />
+                            <div className={`border border-gray-100 sm:h-36 h-80 flex sm:flex-row flex-col my-4  w-[95%] rounded-xl bg-white transition-all backdrop-blur-sm " ${vid.songId === currentSong.songId?'bg-purple-100/80 dark:bg-purple-900/80 border-2 border-purple-500':'bg-white/80 dark:bg-gray-800/80 hover:bg-white/90 dark:hover:bg-gray-800/90'} hover:bg-purple-100/80 hover:dark:bg-purple-900/80  `} key={index} > 
+                                <div className="h-[60%] w-[100%] sm:h-28 sm:w-52 mt-0 sm:my-auto sm:ml-4 ml-0 rounded-xl " > 
+                                    <img src={`https://img.youtube.com/vi/${vid.url}/hqdefault.jpg`} alt="image" className="h-full w-full sm:rounded-2xl rounded-xl" />
                                 </div>  
-                                <div className="flex flex-col gap-y-7 ml-2 mt-2 items-center dark:text-white text-black text-lg">  
+                                <div className="flex flex-col justify-between ml-4 mt-3 items-start dark:text-white text-black text-lg">  
                                 <span>{vid.name}</span>
-                                    <button className="" onClick={() => {
-                                        // 
-                                        console.log(vid.isUpvoted)
-                                        console.log(songsList)  
-                                        
-                                        
+                                    <button  className="flex items-center gap-2 px-3 py-2 mb-2 rounded-full bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors" onClick={() => {                    
+
                                        if(vid.isUpvoted){
-                                        console.log(vid)
-                                        console.log("delete request sended")
                                         socket?.send(JSON.stringify({
                                             type:"deleteOneUpvote",
                                             songId:vid.songId,
@@ -215,10 +201,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
                                         }))
                                         return;
                                        }
-
-                                       console.log("add request sended")
                                         
-
                                         socket?.send(JSON.stringify({
                                             spaceId:spaceId,    
                                             songId:vid.songId,
@@ -228,29 +211,32 @@ export function Dashboard({spaceId}:{spaceId:string}){
                                             sortVideos();
                                         }, 100);
 
-                                    }}>upvote {vid.upvoteCount}</button>  
+                                    }}>   
+                                        <ThumbsUp size={18} className="text-purple-600 dark:text-purple-400" fill={`${vid.isUpvoted?'white':'transparent'}`}/>
+                                        <span className="dark:text-white">{vid.upvoteCount  }</span>  
+                                    </button>  
                                     {/* <span> video.isUpvoted = {vid.isUpvoted?'true':'false'}</span>  */}
-                                    {vid.songId == currentSong.songId && "current video "}
+                                    {/* {vid.songId == currentSong.songId && "current video "} */}
                                     {/* <div>video {index+1}</div>  */}
                                 </div>
                             </div>
                         )}
                         </div>
                     </div>
-                    <div className="basis-[30%]">    
-                        <div className=" flex justify-between  items-center">
-                            <div className="text-2xl font-bold tracking-tighter sm:text-xl md:text-xl lg:text-2xl/none bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 dark:from-purple-400 dark:via-pink-400 dark:to-blue-400 animate-gradient-x">Add a song</div>
-                            <button className="flex gap-x-2 h-10  w-24 items-center justify-center rounded-lg -black">
-                                <Share2 width={20} height={20} className="mt-1"/>
-                                <span className="text-lg font-semibold">Share</span>   
+                    <div className="basis-[40%] md:pl-0 pl-3">    
+                        <div className=" flex justify-between w-[95%] items-center ">
+                            <div className="text-2xl text-black dark:text-white font-bold">Add a song</div>
+                            <button className=" flex gap-x-2 h-10 w-24 items-center justify-center rounded-xl bg-purple-500 hover:bg-purple-600 hover:scale-[1.04] text-white">
+                                <Share2 width={20} height={20} className=" "/>
+                                <span className="text-lg font-semibold ">Share</span>   
                             </button>        
                         </div>
-                        <div className="border border-gray-700 h-[600px] w-[500px] ">
+                        <div className=" h-[600px] w-[95%] ">
                             <div className="flex flex-col gap-y-2 mt-7">
-                                <input type="text" placeholder="paste youtube link here" className="block rounded-lg w-[100%] text-white  h-9 pl-2 bg-[#000]" onChange={(e) => {
+                                <input type="text" placeholder="paste youtube link here" className="block rounded-xl border border-gray-600 w-[100%] text-black dark:text-white h-12 pl-2 bg-white/80 dark:bg-gray-800/80 hover:bg-white/90 dark:hover:bg-gray-800/90" onChange={(e) => {
                                     setInputData(e.target.value)
                                 }}/>
-                                <button className="block w-[100%] h-10   rounded-lg text-white bg-purple-700" onClick={async () => {
+                                <button className="block w-[100%] h-12 text-white bg-purple-700 rounded-xl font-bold" onClick={async () => {
                                     
                                     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|embed\/|v\/|.+\?v=)?([^&=%\?]{11})/;
                                     if(!youtubeRegex.test(inputData)){
@@ -275,7 +261,7 @@ export function Dashboard({spaceId}:{spaceId:string}){
                                         {currentSong.songId?
                                         !isAdmin ? 
                                         <img src={`https://img.youtube.com/vi/${currentSong.url}/hqdefault.jpg`} alt="image" className="h-[100%] w-[100%]" />:
-                                        <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${currentSong.url}`} controls playing height="100%" width="100%"  onEnded={async () => {
+                                        <ReactPlayer ref={playerRef} url={`https://www.youtube.com/watch?v=${currentSong.url}`} controls  playing height="100%" width="100%"  onEnded={async () => {
                                         socket?.send(JSON.stringify({
                                             type:"deleteUpvote",
                                         songId:currentSong.songId

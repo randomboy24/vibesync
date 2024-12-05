@@ -27,54 +27,24 @@ export const POST = async (req:NextRequest) => {
     }
 }
 
-export async function GET(req:NextRequest){
-    console.log("checking url")
-    // console.log(req.url)
-    const spaceId = req.url.split("spaceId=")[1].split("&")[0];
-    const userId = req.url.split("userId=")[1]
-
-    console.log(spaceId)
+export const GET = async (req:NextRequest) => {
+    console.log("hey there")
+    const userId = req.url.split("userId=")[1];
     console.log(userId)
-
-    const songRecords = await prisma.songs.findMany({
+    const spaces = await prisma.spaces.findMany({
         where:{
-            spaceId:spaceId
+            userId:userId
+        },
+        select:{
+            spacesId:true,
+            name:true
         }
     })
 
-    const songWithUpvotes = await Promise.all(songRecords.map(async (song) => {
-        const upvoteCount = await prisma.upvotes.count({
-            where:{
-                SongId:song.songId
-            }
-        })
-
-        const isUpvoted = await prisma.upvotes.findFirst({
-            where:{
-                UserId:userId,
-                SongId:song.songId
-            },
-            select:{
-                UserId:true
-            }
-        })
-        
-
-        if(isUpvoted){
-            return {...song,upvoteCount:upvoteCount,isUpvoted:true}
-        }
-        else{
-            return {...song,upvoteCount:upvoteCount,isUpvoted:false}
-        }
-
-        // return {...song,upvoteCount:upvoteCount}
-    }))
-
-
-
-    console.log(songWithUpvotes)
+    console.log("spaces")
+    console.log(spaces)
 
     return NextResponse.json({
-        songs:songWithUpvotes
+        spaces:spaces 
     })
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,18 +18,37 @@ import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { UserContext } from '@/app/context'
+import { space } from 'postcss/lib/list'
+
+interface spaceListType {
+  id:number
+  spacesId:string
+  name:string
+}
 
 export function Landing() {
   const [isCreateSpaceOpen, setIsCreateSpaceOpen] = useState(false)
   const [spaceName, setSpaceName] = useState('')
   const session = useSession();
   const router = useRouter();
+  const [spaceList,setSpaceList] = useState<spaceListType[]>([]);
+
+  useEffect(() => {
+    if(session.data?.userId){
+      axios.get(`http://localhost:3000/api/space?userId=${session.data.userId}`).then((res) => {
+        setSpaceList(res.data.spaces)
+        setSpaceList((prevSpaces) => prevSpaces.map((space,index) => ({...space,id:index+1}) ))
+        console.log(res.data.spaces)
+      })
+    }
+    return;
+  },[session.data])
   
   const reponse = useContext(UserContext);
 
   const handleCreateSpace = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Creating space:', spaceName)
+    console.log('Creating space:', spaceName)   
     setIsCreateSpaceOpen(false)
     setSpaceName('')
     console.log(spaceName)
@@ -38,6 +57,14 @@ export function Landing() {
   return (
     <div className=" flex flex-col min-h-screen bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 transition-colors duration-300">
       {/* Space for AppBar */}
+      <div className='text-white mt-3'>
+        your Spaces
+      </div>
+      <div className='flex min-w-screen text-white gap-x-20'>
+        {spaceList.map((space) => <div  className="hover:cursor-pointer" onClick={() => {
+          router.push(`/${space.spacesId}`)
+        }} key={space.id}>{space.name}</div>)}
+      </div>
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 px-4 md:px-6 overflow-hidden relative">
           <div className="container mx-auto relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">

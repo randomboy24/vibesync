@@ -29,3 +29,57 @@ export async function POST(req:NextRequest){
     }
 }   
 
+
+export async function GET(req:NextRequest){
+    console.log("checking url")
+    // console.log(req.url)
+    const spaceId = req.url.split("spaceId=")[1].split("&")[0];
+    const userId = req.url.split("userId=")[1]
+
+    console.log(spaceId)
+    console.log(userId)
+
+    const songRecords = await prisma.songs.findMany({
+        where:{
+            spaceId:spaceId
+        }
+    })
+
+    const songWithUpvotes = await Promise.all(songRecords.map(async (song) => {
+        const upvoteCount = await prisma.upvotes.count({
+            where:{
+                SongId:song.songId
+            }
+        })
+
+        const isUpvoted = await prisma.upvotes.findFirst({
+            where:{
+                UserId:userId,
+                SongId:song.songId
+            },
+            select:{
+                UserId:true
+            }
+        })
+        
+
+        if(isUpvoted){
+            return {...song,upvoteCount:upvoteCount,isUpvoted:true}
+        }
+        else{
+            return {...song,upvoteCount:upvoteCount,isUpvoted:false}
+        }
+
+        // return {...song,upvoteCount:upvoteCount}
+    }))
+
+
+
+    console.log(songWithUpvotes)
+
+    return NextResponse.json({
+        songs:songWithUpvotes
+    })
+}
+
+
